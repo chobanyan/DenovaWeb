@@ -74,7 +74,7 @@ async function collect(page, props) {
         rect: { x: Math.round(r.left + scrollX), y: Math.round(r.top + scrollY), w: Math.round(r.width), h: Math.round(r.height) },
         style,
       };
-      if (el.tagName === 'IMG') Object.assign(item, { src: el.currentSrc || el.src, alt: el.alt, natural: [el.naturalWidth, el.naturalHeight], broken: el.complete && el.naturalWidth === 0 });
+      if (el.tagName === 'IMG') Object.assign(item, { src: el.currentSrc || el.src, alt: el.alt, natural: [el.naturalWidth, el.naturalHeight], broken: !!(el.currentSrc || el.getAttribute('src')) && el.complete && el.naturalWidth === 0, emptySrc: !(el.currentSrc || el.getAttribute('src')) });
       if (el.tagName === 'A') item.href = el.getAttribute('href');
       if (el.scrollWidth > el.clientWidth + 1 && cs.overflowX !== 'visible' && ownText) item.textOverflow = true;
       out.push(item);
@@ -133,6 +133,7 @@ async function collect(page, props) {
       sectionShots.push({ selector: s, file, box });
     }
     runtime.brokenImages = dom.elements.filter((e) => e.broken).map((e) => e.src);
+    runtime.visibleImagesWithoutSrc = dom.elements.filter((e) => e.emptySrc).map((e) => e.selector);
     runtime.horizontalScroll = dom.horizontalScroll;
     runtime.sections = sectionShots;
     fs.writeFileSync(path.join(o.out, `runtime-${w}.json`), JSON.stringify(runtime, null, 1));
